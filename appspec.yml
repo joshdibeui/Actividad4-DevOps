@@ -1,14 +1,25 @@
-version: 0.0
-os: linux
-files:
-  - source: /
-    destination: /home/ec2-user/proyecto-viajes
-hooks:
-  AfterInstall:
-    - location: scripts/install_dependencies.sh
-      timeout: 300
-      runas: ec2-user
-  ApplicationStart:
-    - location: scripts/start_server.sh
-      timeout: 300
-      runas: ec2-user
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo "Instalando dependencias en el entorno de compilación..."
+      - pip install flask boto3 gunicorn
+  pre_build:
+    commands:
+      - echo "Preparando permisos de scripts..."
+      - # Esto asegura que los archivos .sh mantengan permisos de ejecución al llegar a la EC2
+      - chmod +x scripts/install_dependencies.sh
+      - chmod +x scripts/start_server.sh
+  build:
+    commands:
+      - echo "Iniciando validación de empaquetado..."
+      - # Aquí podrías ejecutar tests unitarios si los tuvieras
+      - python -m py_compile app.py
+      - echo "Compilación completada el `date`"
+artifacts:
+  files:
+    - '**/*'
+  name: despliegue-viajes-$(date +%Y-%m-%d)
