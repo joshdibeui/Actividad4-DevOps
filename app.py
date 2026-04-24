@@ -1,38 +1,53 @@
 from flask import Flask, render_template, request
-import json
-import boto3 # Para cuando conectes DynamoDB real
+import boto3
+from boto3.dynamodb.conditions import Attr
+import decimal
 
 app = Flask(__name__)
 
-# Función para obtener datos (Simulada desde JSON o DynamoDB)
-def obtener_datos():
+# Configuración de DynamoDB
+# Si estás en EC2 con un IAM Role, no necesitas credenciales aquí.
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1') # Ajusta tu región
+tabla = dynamodb.Table('Tabla-Estados')
+
+# Helper para manejar números de DynamoDB (Decimal)
+def handle_decimal(obj):
+    if isinstance(obj, list):
+        return [handle_decimal(i) for i in obj]
+    elif isinstance(obj, dict):
+        return {k: handle_decimal(v) for k, v in obj.items()}
+    elif isinstance(obj, decimal.Decimal):
+        return float(obj)
+    return obj
+
+def obtener_datos_dynamo():
     try:
-        # Para DynamoDB usarías: table.scan()['Items']
-        with open('estados.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
+        response = tabla.scan()
+        items = response.get('Items', [])
+        return handle_decimal(items)
+    except Exception as e:
+        print(f"Error al conectar con DynamoDB: {e}")
         return []
 
 @app.route('/', methods=['GET'])
 def index():
-    todos_los_estados = obtener_datos()
-    
-    # Capturar parámetros de búsqueda y filtros desde la URL
     query = request.args.get('q', '').lower()
     clima_filtro = request.args.get('clima', '')
     precio_filtro = request.args.get('precio', '')
 
+    todos_los_estados = obtener_datos_dynamo()
     resultados = []
 
     for estado in todos_los_estados:
-        # Lógica de búsqueda por texto
-        match_query = query in estado['Estado'].lower()
+        # 1. Filtro de búsqueda por nombre
+        match_query = query in estado.get('Estado', '').lower()
         
-        # Lógica de filtro por clima
-        match_clima = not clima_filtro or clima_filtro in estado['Clima']
+        # 2. Filtro de clima
+        match_clima = not clima_filtro or clima_filtro in estado.get('Clima', '')
         
-        # Lógica de filtro por precio
-        costo = float(estado['Costo Total'])
+        # 3. Filtro de presupuesto
+        # Asegúrate que en DynamoDB el costo sea un número o string convertible
+        costo = float(estado.get('Costo Total', 0))
         match_precio = True
         if precio_filtro == 'low': match_precio = costo < 5000
         elif precio_filtro == 'mid': match_precio = 5000 <= costo <= 8000
@@ -43,12 +58,16 @@ def index():
 
     return render_template('index.html', estados=resultados, query=query)
 
-# Ruta para ver el detalle de un estado específico
 @app.route('/estado/<nombre>')
 def detalle(nombre):
-    todos = obtener_datos()
-    estado_seleccionado = next((e for e in todos if e['Estado'] == nombre), None)
-    return render_template('detalle.html', estado=estado_seleccionado)
+    # En lugar de scan, aquí usamos get_item para eficiencia (Búsqueda por Key)
+    try:
+        response = tabla.get_item(Key={'Estado': nombre})
+        estado = handle_decimal(response.get('Item'))
+        return render_template('detalle.html', estado=estado)
+    except Exception as e:
+        print(e)
+        return "Estado no encontrado", 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
