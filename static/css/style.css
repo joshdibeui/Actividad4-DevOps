@@ -1,0 +1,53 @@
+:root {
+    --white-pink: #fff5f7;
+    --deep-red: #e63946;
+    --soft-pink: #ffb3c1;
+    --tech-gray: #2b2d42;
+}
+
+body {
+    background-color: var(--white-pink);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+.hero {
+    background: linear-gradient(135deg, var(--deep-red), var(--soft-pink));
+    padding: 4rem 2rem;
+    color: white;
+    text-align: center;
+    clip-path: ellipse(150% 100% at 50% 0%);
+}
+
+.search-form {
+    background: white;
+    padding: 1rem;
+    border-radius: 50px;
+    display: inline-flex;
+    gap: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border-bottom: 4px solid var(--soft-pink);
+    transition: 0.3s;
+}
+
+.card:hover {
+    border-bottom: 4px solid var(--deep-red);
+    transform: translateY(-5px);
+}
+
+.btn-detail {
+    display: block;
+    text-align: center;
+    background: var(--deep-red);
+    color: white;
+    text-decoration: none;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}

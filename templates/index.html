@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Destinos Darky | Premium Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="hero">
+    <div class="logo">Destinos<span>Darky</span></div>
+    <h1>Encuentra tu próximo destino</h1>
+    
+    <form action="/" method="GET" class="search-form">
+        <input type="text" name="q" placeholder="¿A dónde vas?" value="{{ query }}">
+        
+        <select name="clima">
+            <option value="">Clima</option>
+            <option value="Cálido">Cálido</option>
+            <option value="Templado">Templado</option>
+        </select>
+
+        <select name="precio">
+            <option value="">Presupuesto</option>
+            <option value="low">Económico</option>
+            <option value="mid">Medio</option>
+            <option value="high">Premium</option>
+        </select>
+
+        <button type="submit">Buscar</button>
+    </form>
+</header>
+
+<main class="grid">
+    {% for estado in estados %}
+    <div class="card">
+        <div class="badge">{{ estado.Clima }}</div>
+        <h3>{{ estado.Estado }}</h3>
+        <p class="price">${{ estado['Costo Total'] }}</p>
+        <a href="/estado/{{ estado.Estado }}" class="btn-detail">Ver detalles</a>
+    </div>
+    {% else %}
+    <p>No se encontraron destinos que coincidan con tu búsqueda.</p>
+    {% endfor %}
+</main>
+
+</body>
+</html>
