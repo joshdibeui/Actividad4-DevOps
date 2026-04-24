@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ estado.Estado }} | Detalles</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="detail-page">
+    <div class="container">
+        <a href="/" class="btn-back">← Volver al buscador</a>
+        
+        <div class="detail-card">
+            <header class="detail-header">
+                <h1>{{ estado.Estado }}</h1>
+                <span class="tag">{{ estado.Clima }}</span>
+            </header>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <label>Precio Estimado</label>
+                    <p class="price-highlight">${{ estado['Costo Total'] }}</p>
+                </div>
+                <div class="info-box">
+                    <label>ID de Registro</label>
+                    <p>{{ estado.ID }}</p>
+                </div>
+            </div>
+
+            <div class="description-section">
+                <h3>Información de Viaje</h3>
+                <p>Este destino ha sido procesado mediante nuestra ingeniería de datos para ofrecerte el mejor costo en ambiente {{ estado.Clima.lower() }}.</p>
+            </div>
+
+            <button class="btn-primary">Reservar en {{ estado.Estado }}</button>
+        </div>
+    </div>
+</body>
+</html>
